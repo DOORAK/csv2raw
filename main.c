@@ -1,4 +1,4 @@
-﻿//#define __STDC_WANT_LIB_EXT2__  1
+//#define __STDC_WANT_LIB_EXT2__  1
 //#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8875,6 +8875,9 @@ void stringCleaner(char *input) {
     while(ptr = strpbrk(input, ","))  {*ptr = '.';    }   // , -->  . for string to float conversion
     while(ptr = strpbrk(input, "\n")) {*ptr = '\0';   }
     while(ptr = strpbrk(input, "\r")) {*ptr = '\0';   }
+	while(ptr = strpbrk(input, "\\")) {*ptr = ' ';    }
+	while(ptr = strpbrk(input, "\/")) {*ptr = ' ';    }
+	while(ptr = strpbrk(input, "?"))  {*ptr = ' ';    }
 }
 
 
@@ -8895,7 +8898,12 @@ int main(int argc, char *argv[]){
 		namelist_size += 1;
 		while(1){
 			namelist[namelist_size] = strtok(NULL, ";");
-			if (namelist[namelist_size] != NULL) {stringCleaner(namelist[namelist_size]);namelist_size += 1;}else{break;}	}
+			if (namelist[namelist_size] != NULL) {
+				stringCleaner(namelist[namelist_size]);
+				if (strlen(namelist[namelist_size])>0){
+					namelist_size += 1;}
+			}
+			else{break;}	}
 
 		for(i=0;i<namelist_size;i++)
 		{
