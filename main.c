@@ -1,4 +1,4 @@
-﻿//#define __STDC_WANT_LIB_EXT2__  1
+//#define __STDC_WANT_LIB_EXT2__  1
 //#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8873,9 +8873,9 @@ long start = 0;
 
 
 void stringCleaner(char *input) {
-    while(ptr = strpbrk(input, ","))  {*ptr = '.';    }   // , -->  . for string to float conversion
-    while(ptr = strpbrk(input, "\n")) {*ptr = '\0';   }
-    while(ptr = strpbrk(input, "\r")) {*ptr = '\0';   }
+	while(ptr = strpbrk(input, ","))  {*ptr = '.';    }   // , -->  . for string to float conversion
+	while(ptr = strpbrk(input, "\n")) {*ptr = '\0';   }
+	while(ptr = strpbrk(input, "\r")) {*ptr = '\0';   }
 	while(ptr = strpbrk(input, "\\")) {*ptr = ' ';    }
 	while(ptr = strpbrk(input, "/"))  {*ptr = ' ';    }
 	while(ptr = strpbrk(input, "?"))  {*ptr = ' ';    }
@@ -8906,7 +8906,7 @@ int main(int argc, char *argv[]){
 			}
 			else{break;}	}
 
-		for(i=0;i<namelist_size;i++){		fo[i] = fopen(namelist[i],"wb");	}
+		for(i=0;i<namelist_size;i++){	fo[i] = fopen(namelist[i],"wb");	}
 
 
 		while(1){
@@ -8930,7 +8930,7 @@ int main(int argc, char *argv[]){
 		for(i=0;i<namelist_size;i++){	fflush(fo[i]);	fclose(fo[i]);		}
 		
 
-		printf("wasted time %Lf sec\n", (long double)(clock()-start)/(long double)CLOCKS_PER_SEC);
+		printf("wasted time %f sec\n", (float)(clock()-start)/(float)CLOCKS_PER_SEC);
 
 		fclose(ff);
 		exit(0);	}
