@@ -8865,23 +8865,36 @@ int namelist_size;
 int i;
 char * namelist[255];
 char * tmp_str[255];
+char * t_end = NULL;
 FILE * ff;
 FILE * fo[255];
 float tmpdat;
 char *ptr = NULL;
-long start = 0;
+char *buf;
+long start, fsize = 0;
 
 
 void stringCleaner(char *input) {
 	while(ptr = strpbrk(input, ","))  {*ptr = '.';    }   // , -->  . for string to float conversion
+	while(ptr = strpbrk(input, "\r")) {*ptr = ' ';   }
 	while(ptr = strpbrk(input, "\n")) {*ptr = '\0';   }
-	while(ptr = strpbrk(input, "\r")) {*ptr = '\0';   }
 	while(ptr = strpbrk(input, "\\")) {*ptr = ' ';    }
 	while(ptr = strpbrk(input, "/"))  {*ptr = ' ';    }
 	while(ptr = strpbrk(input, "?"))  {*ptr = ' ';    }
 }
 
+void ffgets (char ** buffer, char** input){
+	t_end = NULL;
+    if (*input[0] != '\0') {t_end = strchr(*input, '\n');
+	//if (t_end != NULL){
+		*buffer = *input;
+		*input = t_end;
+        *input[0] = '\0';
+        *input = *input+1;
+    }
+	else{*buffer = "\0";}
 
+}
 
 int main(int argc, char *argv[]){
 	start = clock();
@@ -8893,46 +8906,49 @@ int main(int argc, char *argv[]){
 	else{
 		namelist_size = 0;
 		ff = fopen(argv[1],"rb");
+		
 		if (ff == NULL) {printf("NO SUCH FILE AS %s !!!\n",argv[1]); getchar(); exit(0);}
-		fgets((char*)tmp_str,255, ff);
-		namelist[0] = strtok((char*)tmp_str, ";");
+        fseek(ff,0,SEEK_END);
+		fsize = ftell(ff);
+		rewind(ff);
+		buf = (char*)malloc(fsize);
+		fread(buf,fsize,1,ff);
+		fclose(ff);
+		ffgets(tmp_str,&buf);			//fgets((char*)tmp_str,255, ff);
+		namelist[0] = strtok((char*)*tmp_str, ";");
 		namelist_size += 1;
-		while(1){
+        while(1){
 			namelist[namelist_size] = strtok(NULL, ";");
 			if (namelist[namelist_size] != NULL) {
-				stringCleaner(namelist[namelist_size]);
 				if (strlen(namelist[namelist_size])>0){
 					namelist_size += 1;}
 			}
 			else{break;}	}
 
-		for(i=0;i<namelist_size;i++){	fo[i] = fopen(namelist[i],"wb");	}
-
+		for(i=0;i<namelist_size;i++){	stringCleaner(namelist[i]);fo[i] = fopen(namelist[i],"wb"); printf("fileName: %s\n",namelist[i] );	}
 
 		while(1){
-			fgets((char*)tmp_str,255, ff);
-			stringCleaner((char*)tmp_str);
-			if (strlen((char*)tmp_str)>0)
+			ffgets(tmp_str,&buf);//fgets((char*)tmp_str,255, ff);
+			stringCleaner((char*)*tmp_str);
+			if (strlen((char*)*tmp_str)>0)
 			{
-				tmpdat = (float)atof(strtok((char*)tmp_str, ";"));
+				tmpdat = (float)atof(strtok((char*)*tmp_str, ";"));
 				fwrite(&tmpdat, sizeof(float), 1, fo[0]);
 				for(i=1;i<namelist_size;i++)
 				{
 					tmpdat = (float)atof(strtok(NULL, ";"));
 					fwrite(&tmpdat, sizeof(float), 1, fo[i]);
-					fflush(fo[i]);
 				}
-			}
+			}else{break;}
 			*tmp_str = NULL;
-			if (feof(ff)){break;}		}
+			if (buf == 0){break;}
+		}
 
 
 		for(i=0;i<namelist_size;i++){	fflush(fo[i]);	fclose(fo[i]);		}
-		
+    }
+    printf("wasted time %f sec\n", (float)(clock()-start)/(float)CLOCKS_PER_SEC);
 
-		printf("wasted time %f sec\n", (float)(clock()-start)/(float)CLOCKS_PER_SEC);
-
-		fclose(ff);
-		exit(0);	}
+    exit(0);
 
 }
